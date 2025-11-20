@@ -1,18 +1,9 @@
 const express = require("express");
 const router = express.Router();
-const { saveReview, getReviews } = require("../services/reviews.service");
+const reviewsModule = require("../modules/reviews.module");
 
-// POST — add review
-router.post("/", async (req, res) => {
-  const data = req.body;
-  const saved = await saveReview(data);
-  res.json(saved);
-});
-
-// GET — list reviews
-router.get("/", async (req, res) => {
-  const reviews = await getReviews();
-  res.json(reviews);
+router.get("/", (req, res) => {
+  res.json({ message: "Reviews endpoint OK" });
 });
 
 module.exports = router;
