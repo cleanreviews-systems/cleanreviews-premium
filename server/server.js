@@ -5,12 +5,12 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// IMPORT MODULE ROUTES (pas controllers)
-app.use("/auth", require("./modules/auth.module"));
-app.use("/reviews", require("./modules/reviews.module"));
-app.use("/business", require("./modules/business.module"));
-app.use("/campaigns", require("./modules/campaigns.module"));
-app.use("/ai", require("./modules/ai.module"));
+// IMPORT CORRECT DES CONTROLLERS
+app.use("/auth", require("./controllers/auth.controller"));
+app.use("/reviews", require("./controllers/reviews.controller"));
+app.use("/business", require("./controllers/business.controller"));
+app.use("/campaigns", require("./controllers/campaigns.controller"));
+app.use("/ai", require("./controllers/ai.controller"));
 
 app.get("/", (req, res) => {
   res.json({ message: "CleanReviews Premium API is running" });
