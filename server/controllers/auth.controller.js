@@ -1,27 +1,23 @@
 const express = require("express");
 const router = express.Router();
+const authService = require("../services/auth.service");
 
-const { signup, login } = require("../services/auth.service");
-
-// POST /auth/signup
-router.post("/signup", async (req, res) => {
+router.post("/register", async (req, res) => {
   try {
-    const user = await signup(req.body);
+    const user = await authService.registerUser(req.body.email, req.body.password);
     res.json(user);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
-// POST /auth/login
 router.post("/login", async (req, res) => {
   try {
-    const token = await login(req.body);
-    res.json({ token });
-  } catch (err) {
-    res.status(400).json({ error: err.message });
+    const user = await authService.loginUser(req.body.email, req.body.password);
+    res.json(user);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
 module.exports = router;
-
