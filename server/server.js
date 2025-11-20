@@ -6,14 +6,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// IMPORT ROUTES
-const authRoutes = require("./modules/auth.module");
-const reviewRoutes = require("./modules/reviews.module");
-const businessRoutes = require("./modules/business.module");
-const campaignRoutes = require("./modules/campaigns.module");
-const aiRoutes = require("./modules/ai.module");
-
-// ROUTES PREFIX
+// ROUTES PREFIX - use controllers only
 app.use("/auth", require("./controllers/auth.controller"));
 app.use("/reviews", require("./controllers/reviews.controller"));
 app.use("/business", require("./controllers/business.controller"));
