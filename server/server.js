@@ -10,6 +10,10 @@ app.use(cors());
 const reviewRoutes = require("./modules/reviews");
 app.use("/reviews", reviewRoutes);
 
+// AUTH
+const authRoutes = require("./modules/auth.module");
+app.use("/auth", authRoutes);
+
 // Test route
 app.get("/", (req, res) => {
   res.json({ message: "CleanReviews Premium API is running" });
@@ -17,4 +21,3 @@ app.get("/", (req, res) => {
 
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => console.log("Server running on port " + PORT));
-
