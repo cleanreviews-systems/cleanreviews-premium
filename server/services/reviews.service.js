@@ -1,23 +1,27 @@
-const fs = require("fs");
-const path = require("path");
+const db = require('../modules/db');
 
-const filePath = path.join(__dirname, "../reviews.json");
-
-// Add review
-function saveReview(review) {
-  let list = [];
-  if (fs.existsSync(filePath)) {
-    list = JSON.parse(fs.readFileSync(filePath));
-  }
-  list.push(review);
-  fs.writeFileSync(filePath, JSON.stringify(list, null, 2));
-  return review;
+function listReviewsByBusiness(businessId) {
+  const stmt = db.prepare(
+    'SELECT * FROM reviews WHERE business_id = ? ORDER BY created_at DESC'
+  );
+  return stmt.all(businessId);
 }
 
-// Get all reviews
-function getReviews() {
-  if (!fs.existsSync(filePath)) return [];
-  return JSON.parse(fs.readFileSync(filePath));
+function addReview(businessId, rating, comment, authorName) {
+  const stmt = db.prepare(
+    'INSERT INTO reviews (business_id, rating, comment, author_name) VALUES (?, ?, ?, ?)'
+  );
+  const info = stmt.run(businessId, rating, comment, authorName || null);
+  return {
+    id: info.lastInsertRowid,
+    business_id: businessId,
+    rating,
+    comment,
+    author_name: authorName || null,
+  };
 }
 
-module.exports = { saveReview, getReviews };
+module.exports = {
+  listReviewsByBusiness,
+  addReview,
+};
