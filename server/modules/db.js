@@ -1,24 +1,50 @@
-const Database = require("better-sqlite3");
-const db = new Database("cleanreviews.db");
+const Database = require('better-sqlite3');
+const path = require('path');
 
-// TABLE USERS
-db.prepare(`
-  CREATE TABLE IF NOT EXISTS users (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    email TEXT UNIQUE,
-    password TEXT
-  );
-`).run();
+const dbPath = path.join(__dirname, '..', 'cleanreviews.db');
+const db = new Database(dbPath);
 
-function getUserByEmail(email) {
-  return db.prepare("SELECT * FROM users WHERE email = ?").get(email);
-}
+db.pragma('journal_mode = WAL');
 
-function createUser(email, password) {
-  const result = db
-    .prepare("INSERT INTO users (email, password) VALUES (?, ?)")
-    .run(email, password);
-  return { id: result.lastInsertRowid, email };
-}
+// Création des tables si elles n'existent pas
+db.exec(`
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  email TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
+);
 
-module.exports = { getUserByEmail, createUser };
+CREATE TABLE IF NOT EXISTS businesses (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  name TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
+CREATE TABLE IF NOT EXISTS reviews (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  business_id INTEGER NOT NULL,
+  rating INTEGER NOT NULL,
+  comment TEXT,
+  author_name TEXT,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (business_id) REFERENCES businesses(id)
+);
+
+CREATE TABLE IF NOT EXISTS campaigns (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  business_id INTEGER,
+  name TEXT NOT NULL,
+  type TEXT NOT NULL,
+  channel TEXT NOT NULL,
+  message_template TEXT NOT NULL,
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id),
+  FOREIGN KEY (business_id) REFERENCES businesses(id)
+);
+`);
+
+module.exports = db;
