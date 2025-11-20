@@ -1,22 +1,32 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const authService = require("../services/auth.service");
+const { registerUser, loginUser } = require('../services/auth.service');
 
-router.post("/register", async (req, res) => {
+// POST /auth/signup
+router.post('/signup', async (req, res) => {
   try {
-    const user = await authService.registerUser(req.body.email, req.body.password);
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    const user = await registerUser(email, password);
     res.json(user);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
-router.post("/login", async (req, res) => {
+// POST /auth/login
+router.post('/login', async (req, res) => {
   try {
-    const user = await authService.loginUser(req.body.email, req.body.password);
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Email and password are required' });
+    }
+    const user = await loginUser(email, password);
     res.json(user);
-  } catch (error) {
-    res.status(400).json({ error: error.message });
+  } catch (err) {
+    res.status(400).json({ error: err.message });
   }
 });
 
