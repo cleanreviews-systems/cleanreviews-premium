@@ -1,24 +1,21 @@
-// Fake in-memory database
-let businesses = [
-  { id: 1, name: "My First Business", userId: 1 }
-];
+// server/services/business.service.js
 
+// Stockage simple en mémoire (à remplacer plus tard par une base SQL)
+let businesses = [];
+
+// Retourne toutes les entreprises
 function listBusinesses() {
-  return businesses;
+    return businesses;
 }
 
+// Crée une nouvelle entreprise
 function createBusiness(name, userId) {
-  const newBusiness = {
-    id: businesses.length + 1,
-    name,
-    userId
-  };
-
-  businesses.push(newBusiness);
-  return newBusiness;
+    const business = { id: businesses.length + 1, name, userId };
+    businesses.push(business);
+    return business;
 }
 
 module.exports = {
-  listBusinesses,
-  createBusiness
+    listBusinesses,
+    createBusiness
 };
