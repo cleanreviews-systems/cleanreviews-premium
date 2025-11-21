@@ -1,50 +1,28 @@
-const Database = require('better-sqlite3');
+// server/modules/db.js
+const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 
+// On stocke la base dans un fichier à la racine de /server
 const dbPath = path.join(__dirname, '..', 'cleanreviews.db');
-const db = new Database(dbPath);
 
-db.pragma('journal_mode = WAL');
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Erreur de connexion à SQLite:', err.message);
+  } else {
+    console.log('Connecté à la base SQLite:', dbPath);
+  }
+});
 
-// Création des tables si elles n'existent pas
-db.exec(`
-CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  email TEXT UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE IF NOT EXISTS businesses (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  name TEXT NOT NULL,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
-);
-
-CREATE TABLE IF NOT EXISTS reviews (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  business_id INTEGER NOT NULL,
-  rating INTEGER NOT NULL,
-  comment TEXT,
-  author_name TEXT,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (business_id) REFERENCES businesses(id)
-);
-
-CREATE TABLE IF NOT EXISTS campaigns (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
-  business_id INTEGER,
-  name TEXT NOT NULL,
-  type TEXT NOT NULL,
-  channel TEXT NOT NULL,
-  message_template TEXT NOT NULL,
-  created_at TEXT DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id),
-  FOREIGN KEY (business_id) REFERENCES businesses(id)
-);
-`);
+// Création de la table users si elle n’existe pas encore
+db.serialize(() => {
+  db.run(`
+    CREATE TABLE IF NOT EXISTS users (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      email TEXT UNIQUE NOT NULL,
+      password TEXT NOT NULL,
+      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+    );
+  `);
+});
 
 module.exports = db;
