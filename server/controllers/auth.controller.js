@@ -1,40 +1,26 @@
 const express = require("express");
 const router = express.Router();
-const bcrypt = require("bcryptjs");
+const { registerUser, loginUser } = require("../services/auth.service");
 
-// Base de données simple en mémoire
-let users = [];
-
-// POST /auth/signup
+// Inscription
 router.post("/signup", async (req, res) => {
   try {
     const { email, password } = req.body;
-    if (!email || !password)
-      return res.status(400).json({ error: "Missing fields" });
-
-    const hashed = await bcrypt.hash(password, 10);
-    users.push({ email, password: hashed });
-
-    res.json({ message: "User registered", email });
+    const result = await registerUser(email, password);
+    res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
-// POST /auth/login
+// Connexion
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
-
-    const user = users.find(u => u.email === email);
-    if (!user) return res.status(400).json({ error: "User not found" });
-
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) return res.status(400).json({ error: "Bad password" });
-
-    res.json({ message: "Login OK", email });
+    const result = await loginUser(email, password);
+    res.json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    res.status(400).json({ error: err.message });
   }
 });
 
