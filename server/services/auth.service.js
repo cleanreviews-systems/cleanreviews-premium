@@ -1,20 +1,59 @@
-let users = [];
+const db = require('../db');
+const bcrypt = require('bcryptjs');
 
-function registerUser(email, password) {
-  const exists = users.find(u => u.email === email);
-  if (exists) throw new Error("User already exists");
-
-  const newUser = { email, password };
-  users.push(newUser);
-  return newUser;
+// Récupérer un user par email
+function getUserByEmail(email) {
+  return new Promise((resolve, reject) => {
+    db.get('SELECT * FROM users WHERE email = ?', [email], (err, row) => {
+      if (err) return reject(err);
+      resolve(row || null);
+    });
+  });
 }
 
-function loginUser(email, password) {
-  const user = users.find(u => u.email === email);
-  if (!user || user.password !== password)
-    throw new Error("Invalid credentials");
+// Créer un user
+function createUser(email, password) {
+  return new Promise((resolve, reject) => {
+    bcrypt.hash(password, 10, (err, hash) => {
+      if (err) return reject(err);
 
-  return user;
+      const sql = 'INSERT INTO users (email, password_hash) VALUES (?, ?)';
+      db.run(sql, [email, hash], function (err) {
+        if (err) {
+          if (err.code === 'SQLITE_CONSTRAINT') {
+            return reject(new Error('User already exists'));
+          }
+          return reject(err);
+        }
+        resolve({ id: this.lastID, email });
+      });
+    });
+  });
 }
 
-module.exports = { registerUser, loginUser };
+// Signup logique
+async function registerUser(email, password) {
+  const existing = await getUserByEmail(email);
+  if (existing) {
+    throw new Error('User already exists');
+  }
+  return createUser(email, password);
+}
+
+// Login logique
+async function loginUser(email, password) {
+  const user = await getUserByEmail(email);
+  if (!user) throw new Error('Invalid credentials');
+
+  const ok = await bcrypt.compare(password, user.password_hash);
+  if (!ok) throw new Error('Invalid credentials');
+
+  // Plus tard : on renverra aussi un JWT
+  return { id: user.id, email: user.email };
+}
+
+module.exports = {
+  registerUser,
+  loginUser,
+};
+
