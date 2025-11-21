@@ -1,21 +1,25 @@
 // server/services/business.service.js
+const {
+  listBusinesses,
+  createBusiness,
+} = require("../modules/business.module");
 
-// Stockage simple en mémoire (à remplacer plus tard par une base SQL)
-let businesses = [];
+// Pour l’instant on n’a pas encore de JWT/token,
+// donc on va simuler un user connecté avec userId = 1.
 
-// Retourne toutes les entreprises
-function listBusinesses() {
-    return businesses;
+async function getBusinessesForUser(userId) {
+  return listBusinesses(userId);
 }
 
-// Crée une nouvelle entreprise
-function createBusiness(name, userId) {
-    const business = { id: businesses.length + 1, name, userId };
-    businesses.push(business);
-    return business;
+async function addBusinessForUser(userId, name) {
+  if (!name || !name.trim()) {
+    throw new Error("Business name is required");
+  }
+
+  return createBusiness(name.trim(), userId);
 }
 
 module.exports = {
-    listBusinesses,
-    createBusiness
+  getBusinessesForUser,
+  addBusinessForUser,
 };
