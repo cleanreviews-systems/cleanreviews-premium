@@ -1,39 +1,18 @@
-// server/services/auth.service.js
-// Service d'auth simplifié en mémoire (sans base de données)
+const { getUserByEmail, createUser } = require("../modules/db");
 
-const users = []; // stockage en mémoire pour les tests
+module.exports = {
+    registerUser: async (email, password) => {
+        const exists = getUserByEmail(email);
+        if (exists) throw new Error("User already exists");
 
-async function signup(email, password) {
-  const exists = users.find((u) => u.email === email);
-  if (exists) {
-    throw new Error("User already exists");
-  }
+        return createUser(email, password);
+    },
 
-  const user = {
-    id: users.length + 1,
-    email,
-    password, // en vrai on chiffrerait le mot de passe
-  };
+    loginUser: async (email, password) => {
+        const user = getUserByEmail(email);
+        if (!user || user.password !== password)
+            throw new Error("Invalid credentials");
 
-  users.push(user);
-  return user;
-}
-
-async function login(email, password) {
-  const user = users.find(
-    (u) => u.email === email && u.password === password
-  );
-
-  if (!user) {
-    throw new Error("Invalid credentials");
-  }
-
-  // token factice pour l’instant
-  return {
-    token: "dummy-token",
-    userId: user.id,
-  };
-}
-
-module.exports = { signup, login };
-
+        return user;
+    }
+};
