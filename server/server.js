@@ -5,10 +5,7 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
-// AUTH
 app.use("/auth", require("./controllers/auth.controller"));
-
-// BUSINESS
 app.use("/business", require("./controllers/business.controller"));
 
 // Ping de test
