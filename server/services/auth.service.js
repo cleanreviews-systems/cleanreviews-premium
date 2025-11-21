@@ -1,18 +1,20 @@
-const { getUserByEmail, createUser } = require("../modules/db");
+let users = [];
 
-module.exports = {
-    registerUser: async (email, password) => {
-        const exists = getUserByEmail(email);
-        if (exists) throw new Error("User already exists");
+function registerUser(email, password) {
+  const exists = users.find(u => u.email === email);
+  if (exists) throw new Error("User already exists");
 
-        return createUser(email, password);
-    },
+  const newUser = { email, password };
+  users.push(newUser);
+  return newUser;
+}
 
-    loginUser: async (email, password) => {
-        const user = getUserByEmail(email);
-        if (!user || user.password !== password)
-            throw new Error("Invalid credentials");
+function loginUser(email, password) {
+  const user = users.find(u => u.email === email);
+  if (!user || user.password !== password)
+    throw new Error("Invalid credentials");
 
-        return user;
-    }
-};
+  return user;
+}
+
+module.exports = { registerUser, loginUser };
