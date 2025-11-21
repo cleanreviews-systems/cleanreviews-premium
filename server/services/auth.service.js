@@ -1,46 +1,39 @@
+// server/services/auth.service.js
 const bcrypt = require("bcryptjs");
-const sqlite3 = require("sqlite3").verbose();
-const db = new sqlite3.Database("./db.sqlite");
 
-// Création automatique de la table utilisateur
-db.run(`CREATE TABLE IF NOT EXISTS users (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  email TEXT UNIQUE,
-  password TEXT
-)`);
+// Petit "pseudo" stockage en mémoire pour tester l'API.
+// (On branchera ça sur la vraie base plus tard.)
+const users = new Map(); // email -> { email, passwordHash }
 
-// Inscription
-function registerUser(email, password) {
-  return new Promise((resolve, reject) => {
-    const hash = bcrypt.hashSync(password, 10);
+async function registerUser(email, password) {
+  const existing = users.get(email);
+  if (existing) {
+    throw new Error("User already exists");
+  }
 
-    db.run(
-      `INSERT INTO users (email, password) VALUES (?, ?)`,
-      [email, hash],
-      function (err) {
-        if (err) return reject(new Error("Email already exists"));
-        resolve({ id: this.lastID, email });
-      }
-    );
-  });
+  const passwordHash = await bcrypt.hash(password, 10);
+  const user = { email, passwordHash };
+  users.set(email, user);
+
+  // On ne renvoie jamais le hash au client
+  return { email };
 }
 
-// Connexion
-function loginUser(email, password) {
-  return new Promise((resolve, reject) => {
-    db.get(
-      `SELECT * FROM users WHERE email = ?`,
-      [email],
-      (err, user) => {
-        if (err || !user) return reject(new Error("User not found"));
+async function loginUser(email, password) {
+  const user = users.get(email);
+  if (!user) {
+    throw new Error("Invalid credentials");
+  }
 
-        const valid = bcrypt.compareSync(password, user.password);
-        if (!valid) return reject(new Error("Invalid password"));
+  const ok = await bcrypt.compare(password, user.passwordHash);
+  if (!ok) {
+    throw new Error("Invalid credentials");
+  }
 
-        resolve({ id: user.id, email: user.email });
-      }
-    );
-  });
+  return { email };
 }
 
-module.exports = { registerUser, loginUser };
+module.exports = {
+  registerUser,
+  loginUser,
+};
