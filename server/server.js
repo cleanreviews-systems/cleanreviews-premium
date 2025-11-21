@@ -5,8 +5,9 @@ const app = express();
 app.use(express.json());
 app.use(cors());
 
+// ROUTES
 app.use("/auth", require("./controllers/auth.controller"));
-app.use("/business", require("./controllers/business.controller"));
+app.use("/business", require("./controllers/business.controller")); // <-- AJOUT OBLIGATOIRE
 
 app.get("/", (req, res) => {
   res.json({ message: "CleanReviews Premium API is running" });
