@@ -7,8 +7,9 @@ app.use(cors());
 
 // ROUTES
 app.use("/auth", require("./controllers/auth.controller"));
-app.use("/business", require("./controllers/business.controller")); // <-- AJOUT OBLIGATOIRE
+app.use("/business", require("./controllers/business.controller"));  // <-- OBLIGATOIRE
 
+// Ping de test
 app.get("/", (req, res) => {
   res.json({ message: "CleanReviews Premium API is running" });
 });
